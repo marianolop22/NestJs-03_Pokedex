@@ -1,5 +1,15 @@
 # Changelog
 
+## [v0.4.1] - 2025-05-29
+
+### Changes:
+- 🚀 Merge pull request #7 from marianolop22/fix_change_log ([a8ab1dd](https://github.com/marianolop22/NestJs-03_Pokedex/commit/a8ab1dd))
+- 🔧 fix hotfix major changelog ([0d001f7](https://github.com/marianolop22/NestJs-03_Pokedex/commit/0d001f7))
+- 🚀 Merge pull request #6 from marianolop22/new_action ([598bf51](https://github.com/marianolop22/NestJs-03_Pokedex/commit/598bf51))
+- 🔧 fix: new auto label ([27c1e7d](https://github.com/marianolop22/NestJs-03_Pokedex/commit/27c1e7d))
+
+---
+
 ## [v0.3.1] - 2025-05-29
 
 ### Cambios:

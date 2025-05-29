@@ -1,4 +1,4 @@
-name: New Auto Update Changelog
+name: Auto Update Changelog
 
 on:
   push:
@@ -12,25 +12,70 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Necesario para obtener todo el historial
+          fetch-depth: 0
           token: ${{ secrets.token }}
       
-      - name: Generate Changelog
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: Generate Enhanced Changelog
         run: |
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          
           echo "# Changelog" > CHANGELOG.md
           echo "" >> CHANGELOG.md
-          echo "Generado automáticamente desde commits" >> CHANGELOG.md
+          echo "Todas las versiones y cambios del proyecto." >> CHANGELOG.md
           echo "" >> CHANGELOG.md
           
-          # Obtener commits desde el último tag o desde el inicio
-          if git describe --tags --abbrev=0 >/dev/null 2>&1; then
-            LAST_TAG=$(git describe --tags --abbrev=0)
-            echo "## Cambios desde $LAST_TAG" >> CHANGELOG.md
-            git log --oneline --pretty=format:"- %s (%an - %ad)" --date=short $LAST_TAG..HEAD >> CHANGELOG.md
-          else
-            echo "## Todos los cambios" >> CHANGELOG.md
-            git log --oneline --pretty=format:"- %s (%an - %ad)" --date=short >> CHANGELOG.md
+          # Verificar si ya existe una entrada para esta versión
+          if [ -f CHANGELOG.md ] && grep -q "## \[v$CURRENT_VERSION\]" CHANGELOG.md; then
+            echo "Versión $CURRENT_VERSION ya existe en changelog, actualizando..."
           fi
+          
+          # Buscar el último commit que cambió package.json (versión anterior)
+          LAST_VERSION_COMMIT=$(git log -n 2 --pretty=format:"%H" -- package.json | tail -n 1 2>/dev/null || echo "")
+          
+          # Generar entrada para la versión actual
+          echo "## [v$CURRENT_VERSION] - $(date '+%Y-%m-%d')" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          
+          if [ -n "$LAST_VERSION_COMMIT" ]; then
+            # Commits desde el último cambio de versión
+            COMMITS=$(git log --oneline --pretty=format:"%s" $LAST_VERSION_COMMIT..HEAD | grep -v "docs: auto-update CHANGELOG")
+            
+            if [ -n "$COMMITS" ]; then
+              echo "### Cambios:" >> CHANGELOG.md
+              echo "$COMMITS" | while read -r commit; do
+                # Categorizar commits
+                if echo "$commit" | grep -q "^feat"; then
+                  echo "- ✨ $commit" >> CHANGELOG.md
+                elif echo "$commit" | grep -q "^fix"; then
+                  echo "- 🐛 $commit" >> CHANGELOG.md
+                elif echo "$commit" | grep -q "^docs"; then
+                  echo "- 📝 $commit" >> CHANGELOG.md
+                elif echo "$commit" | grep -q "^style"; then
+                  echo "- 💄 $commit" >> CHANGELOG.md
+                elif echo "$commit" | grep -q "^refactor"; then
+                  echo "- ♻️ $commit" >> CHANGELOG.md
+                elif echo "$commit" | grep -q "^test"; then
+                  echo "- ✅ $commit" >> CHANGELOG.md
+                else
+                  echo "- 🔧 $commit" >> CHANGELOG.md
+                fi
+              done
+            else
+              echo "- Sin cambios desde la última versión" >> CHANGELOG.md
+            fi
+          else
+            echo "### Primera versión:" >> CHANGELOG.md
+            git log --oneline --pretty=format:"- 🔧 %s" | head -10 >> CHANGELOG.md
+          fi
+          
+          echo "" >> CHANGELOG.md
+          echo "---" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
       
       - name: Check for changes
         id: verify-changed-files
@@ -47,5 +92,5 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add CHANGELOG.md
-          git commit -m "docs: auto-update CHANGELOG.md [skip ci]"
+          git commit -m "docs: auto-update CHANGELOG.md v$(node -p 'require(\"./package.json\").version') [skip ci]"
           git push

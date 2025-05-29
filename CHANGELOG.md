@@ -1,5 +1,12 @@
 # Changelog
 
+## [v0.3.1] - 2025-05-29
+
+### Cambios:
+- 🐛 fix: a ver este fix del commit hash ([df90274](https://github.com/marianolop22/NestJs-03_Pokedex/commit/df90274))
+
+---
+
 ## [v0.3.0] - 2025-05-29
 
 ### Cambios:

@@ -1,0 +1,26 @@
+name: Auto Changelog
+on:
+  push:
+    branches: [main]
+
+jobs:
+  changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Generate Changelog
+        run: |
+          echo "# Changelog" > CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          git log --oneline --decorate --graph >> CHANGELOG.md
+      
+      - name: Commit changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add CHANGELOG.md
+          git diff --staged --quiet || git commit -m "Auto-update CHANGELOG.md"
+          git push

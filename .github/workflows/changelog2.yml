@@ -24,6 +24,16 @@ jobs:
         run: |
           CURRENT_VERSION=$(node -p "require('./package.json').version")
           
+          # Obtener URL del repositorio para los links
+          REPO_URL=$(git config --get remote.origin.url)
+          # Convertir SSH a HTTPS si es necesario
+          if [[ $REPO_URL == git@github.com:* ]]; then
+            REPO_URL="https://github.com/${REPO_URL#git@github.com:}"
+            REPO_URL="${REPO_URL%.git}"
+          elif [[ $REPO_URL == https://github.com/* ]]; then
+            REPO_URL="${REPO_URL%.git}"
+          fi
+          
           # Verificar si ya existe una entrada para esta versión
           if [ -f CHANGELOG.md ] && grep -q "## \[v$CURRENT_VERSION\]" CHANGELOG.md; then
             echo "Versión $CURRENT_VERSION ya existe en changelog, saltando..."
@@ -44,21 +54,24 @@ jobs:
             if [ -n "$COMMITS" ]; then
               echo "### Cambios:" >> temp_changelog.md
               echo "$COMMITS" | while IFS='|' read -r commit hash; do
+                # Crear link del commit
+                COMMIT_LINK="[$hash]($REPO_URL/commit/$hash)"
+                
                 # Categorizar commits
                 if echo "$commit" | grep -q "^feat"; then
-                  echo "- ✨ $commit ($hash)" >> temp_changelog.md
+                  echo "- ✨ $commit ($COMMIT_LINK)" >> temp_changelog.md
                 elif echo "$commit" | grep -q "^fix"; then
-                  echo "- 🐛 $commit ($hash)" >> temp_changelog.md
+                  echo "- 🐛 $commit ($COMMIT_LINK)" >> temp_changelog.md
                 elif echo "$commit" | grep -q "^docs"; then
-                  echo "- 📝 $commit ($hash)" >> temp_changelog.md
+                  echo "- 📝 $commit ($COMMIT_LINK)" >> temp_changelog.md
                 elif echo "$commit" | grep -q "^style"; then
-                  echo "- 💄 $commit ($hash)" >> temp_changelog.md
+                  echo "- 💄 $commit ($COMMIT_LINK)" >> temp_changelog.md
                 elif echo "$commit" | grep -q "^refactor"; then
-                  echo "- ♻️ $commit ($hash)" >> temp_changelog.md
+                  echo "- ♻️ $commit ($COMMIT_LINK)" >> temp_changelog.md
                 elif echo "$commit" | grep -q "^test"; then
-                  echo "- ✅ $commit ($hash)" >> temp_changelog.md
+                  echo "- ✅ $commit ($COMMIT_LINK)" >> temp_changelog.md
                 else
-                  echo "- 🔧 $commit ($hash)" >> temp_changelog.md
+                  echo "- 🔧 $commit ($COMMIT_LINK)" >> temp_changelog.md
                 fi
               done
             else
@@ -66,7 +79,10 @@ jobs:
             fi
           else
             echo "### Primera versión:" >> temp_changelog.md
-            git log --oneline --pretty=format:"- 🔧 %s (%h)" | head -10 >> temp_changelog.md
+            git log --oneline --pretty=format:"%s|%h" | head -10 | while IFS='|' read -r commit hash; do
+              COMMIT_LINK="[$hash]($REPO_URL/commit/$hash)"
+              echo "- 🔧 $commit ($COMMIT_LINK)" >> temp_changelog.md
+            done
           fi
           
           echo "" >> temp_changelog.md

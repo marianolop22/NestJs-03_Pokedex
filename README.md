@@ -27,3 +27,5 @@ y acá va otra version más
 a ver qué pasa ahora con esto
 
 nuevo cambio de version
+
+a ver si agrega los mismo a la version actual

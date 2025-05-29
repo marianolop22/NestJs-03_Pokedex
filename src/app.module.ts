@@ -7,6 +7,7 @@ import { PokemonModule } from './pokemon/pokemon.module';
 import { CommonModule } from './common/common.module';
 import { EnvConfiguration } from './config/env.config';
 import { JoiValidationSchema } from './config/joi.validation';
+import { ProjectsModule } from './projects/projects.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { JoiValidationSchema } from './config/joi.validation';
     MongooseModule.forRoot(process.env.MONGODB),
     PokemonModule,
     CommonModule,
+    ProjectsModule,
   ],
 })
 export class AppModule {}

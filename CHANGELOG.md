@@ -1,5 +1,13 @@
 # Changelog
 
+## [v0.4.2] - 2025-05-29
+
+### Changes:
+- 🚀 Fix: Otra prueba mas ([2cb6003](https://github.com/marianolop22/NestJs-03_Pokedex/commit/2cb6003))
+- 🚀 Merge pull request #7 from marianolop22/fix_change_log ([a8ab1dd](https://github.com/marianolop22/NestJs-03_Pokedex/commit/a8ab1dd))
+
+---
+
 ## [v0.4.1] - 2025-05-29
 
 ### Changes:

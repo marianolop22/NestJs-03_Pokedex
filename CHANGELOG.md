@@ -1,10 +1,15 @@
 # Changelog
 
-Generado automáticamente desde commits
+Todas las versiones y cambios del proyecto.
 
-## Cambios desde v0.1.1
-- Feat: Update README.md (Mariano - 2025-05-29)
-- docs: auto-update CHANGELOG.md [skip ci] (GitHub Action - 2025-05-29)
-- Delete .github/workflows/changelog3.yml (Mariano - 2025-05-29)
-- docs: auto-update CHANGELOG.md [skip ci] (GitHub Action - 2025-05-29)
-- Feat: Acabo de borrar el file (Mariano - 2025-05-29)
+## [v0.2.1] - 2025-05-29
+
+### Cambios:
+- ✨ feat: nueva version de cnagelog
+- 🔧 Feat: se agregaron varios cambios y version
+- 🔧 Feat: Update README.md
+- 🔧 Delete .github/workflows/changelog3.yml
+- 🔧 Feat: Acabo de borrar el file
+
+---
+

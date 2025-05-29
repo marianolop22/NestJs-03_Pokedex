@@ -1,0 +1,120 @@
+name: Auto Label Pull Request
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  auto-label:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Get PR commits and add labels
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.token }}
+          script: |
+            const { owner, repo } = context.repo;
+            const prNumber = context.payload.pull_request.number;
+            
+            // Get all commits in the PR
+            const commits = await github.rest.pulls.listCommits({
+              owner,
+              repo,
+              pull_number: prNumber
+            });
+            
+            // Analyze commit messages
+            const commitMessages = commits.data.map(commit => commit.commit.message.toLowerCase());
+            const allCommitText = commitMessages.join(' ');
+            
+            console.log('Commit messages:', commitMessages);
+            
+            // Define label mapping
+            const labelMapping = [
+              { pattern: /^fix[(:]/m, label: 'bug', color: 'ee0701' },
+              { pattern: /^feat[(:]/m, label: 'enhancement', color: '84b6eb' },
+              { pattern: /^docs[(:]/m, label: 'documentation', color: '0052cc' },
+              { pattern: /^style[(:]/m, label: 'style', color: 'fbca04' },
+              { pattern: /^refactor[(:]/m, label: 'refactor', color: 'b60205' },
+              { pattern: /^test[(:]/m, label: 'tests', color: '0e8a16' },
+              { pattern: /^perf[(:]/m, label: 'performance', color: 'c2e0c6' },
+              { pattern: /^build[(:]/m, label: 'build', color: 'fef2c0' },
+              { pattern: /^ci[(:]/m, label: 'ci', color: 'f9d0c4' },
+              { pattern: /^chore[(:]/m, label: 'chore', color: 'ededed' },
+              // Also check for keywords anywhere in commits
+              { pattern: /\bfix\b|\bbug\b|\berror\b/i, label: 'bug', color: 'ee0701' },
+              { pattern: /\bfeature\b|\bnew\b|\badd\b/i, label: 'enhancement', color: '84b6eb' },
+              { pattern: /\bdoc\b|\breadme\b/i, label: 'documentation', color: '0052cc' },
+              { pattern: /\btest\b|\bspec\b/i, label: 'tests', color: '0e8a16' },
+              { pattern: /\bbreaking\b|\bmajor\b/i, label: 'breaking change', color: 'b60205' },
+              { pattern: /\bhotfix\b|\bcritical\b|\burgent\b/i, label: 'priority: high', color: 'd93f0b' }
+            ];
+            
+            // Collect labels to add
+            const labelsToAdd = new Set();
+            
+            for (const { pattern, label } of labelMapping) {
+              if (pattern.test(allCommitText)) {
+                labelsToAdd.add(label);
+                console.log(`Found pattern for label: ${label}`);
+              }
+            }
+            
+            // Get existing labels in the repository
+            const existingLabels = await github.rest.issues.listLabelsForRepo({
+              owner,
+              repo
+            });
+            
+            const existingLabelNames = existingLabels.data.map(label => label.name);
+            
+            // Create missing labels
+            for (const { label, color } of labelMapping) {
+              if (labelsToAdd.has(label) && !existingLabelNames.includes(label)) {
+                try {
+                  await github.rest.issues.createLabel({
+                    owner,
+                    repo,
+                    name: label,
+                    color: color,
+                    description: `Auto-generated label for ${label}`
+                  });
+                  console.log(`Created label: ${label}`);
+                } catch (error) {
+                  console.log(`Label ${label} might already exist:`, error.message);
+                }
+              }
+            }
+            
+            // Add labels to PR
+            if (labelsToAdd.size > 0) {
+              const labelArray = Array.from(labelsToAdd);
+              
+              await github.rest.issues.addLabels({
+                owner,
+                repo,
+                issue_number: prNumber,
+                labels: labelArray
+              });
+              
+              console.log(`Added labels to PR #${prNumber}:`, labelArray);
+              
+              // Add comment to PR explaining the auto-labeling
+              const labelList = labelArray.map(label => `\`${label}\``).join(', ');
+              
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: prNumber,
+                body: `🏷️ **Auto-labeled this PR based on commit analysis:**\n\nLabels added: ${labelList}\n\n*This labeling was done automatically based on commit patterns and keywords.*`
+              });
+              
+            } else {
+              console.log('No matching patterns found, no labels added');
+            }

@@ -1,5 +1,12 @@
 # Changelog
 
+## [v0.4.3] - 2025-05-29
+
+### Changes:
+- 🔧 fix Probemos otro mas ([d37dbc8](https://github.com/marianolop22/NestJs-03_Pokedex/commit/d37dbc8))
+
+---
+
 ## [v0.4.2] - 2025-05-29
 
 ### Changes:

@@ -38,27 +38,27 @@ jobs:
           LAST_VERSION_COMMIT=$(git log -n 2 --pretty=format:"%H" -- package.json | tail -n 1 2>/dev/null || echo "")
           
           if [ -n "$LAST_VERSION_COMMIT" ]; then
-            # Commits desde el último cambio de versión
-            COMMITS=$(git log --oneline --pretty=format:"%s" $LAST_VERSION_COMMIT..HEAD | grep -v "docs: auto-update CHANGELOG")
+            # Commits desde el último cambio de versión (mensaje|hash)
+            COMMITS=$(git log --oneline --pretty=format:"%s|%h" $LAST_VERSION_COMMIT..HEAD | grep -v "docs: auto-update CHANGELOG")
             
             if [ -n "$COMMITS" ]; then
               echo "### Cambios:" >> temp_changelog.md
-              echo "$COMMITS" | while read -r commit; do
+              echo "$COMMITS" | while IFS='|' read -r commit hash; do
                 # Categorizar commits
                 if echo "$commit" | grep -q "^feat"; then
-                  echo "- ✨ $commit" >> temp_changelog.md
+                  echo "- ✨ $commit ($hash)" >> temp_changelog.md
                 elif echo "$commit" | grep -q "^fix"; then
-                  echo "- 🐛 $commit" >> temp_changelog.md
+                  echo "- 🐛 $commit ($hash)" >> temp_changelog.md
                 elif echo "$commit" | grep -q "^docs"; then
-                  echo "- 📝 $commit" >> temp_changelog.md
+                  echo "- 📝 $commit ($hash)" >> temp_changelog.md
                 elif echo "$commit" | grep -q "^style"; then
-                  echo "- 💄 $commit" >> temp_changelog.md
+                  echo "- 💄 $commit ($hash)" >> temp_changelog.md
                 elif echo "$commit" | grep -q "^refactor"; then
-                  echo "- ♻️ $commit" >> temp_changelog.md
+                  echo "- ♻️ $commit ($hash)" >> temp_changelog.md
                 elif echo "$commit" | grep -q "^test"; then
-                  echo "- ✅ $commit" >> temp_changelog.md
+                  echo "- ✅ $commit ($hash)" >> temp_changelog.md
                 else
-                  echo "- 🔧 $commit" >> temp_changelog.md
+                  echo "- 🔧 $commit ($hash)" >> temp_changelog.md
                 fi
               done
             else
@@ -66,7 +66,7 @@ jobs:
             fi
           else
             echo "### Primera versión:" >> temp_changelog.md
-            git log --oneline --pretty=format:"- 🔧 %s" | head -10 >> temp_changelog.md
+            git log --oneline --pretty=format:"- 🔧 %s (%h)" | head -10 >> temp_changelog.md
           fi
           
           echo "" >> temp_changelog.md

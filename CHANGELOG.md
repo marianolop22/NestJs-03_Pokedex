@@ -1,5 +1,13 @@
 # Changelog
 
+## [v0.3.0] - 2025-05-29
+
+### Cambios:
+- ✅ test: probando el nuevo format (17bb742)
+- 💄 style: esto es un cambio estético (bf8ae0a)
+
+---
+
 ## [v0.2.4] - 2025-05-29
 
 ### Cambios:

@@ -1,15 +1,51 @@
-name: Release
+name: New Auto Update Changelog
+
 on:
   push:
-    branches: [main]
+    branches: [ main, master ]
 
 jobs:
-  release:
+  update-changelog:
     runs-on: ubuntu-latest
+    
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-      - run: npm ci
-      - run: npx semantic-release
-        env:
-          GITHUB_TOKEN: ${{ secrets.token }}
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Necesario para obtener todo el historial
+          token: ${{ secrets.token }}
+      
+      - name: Generate Changelog
+        run: |
+          echo "# Changelog" > CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "Generado automáticamente desde commits" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          
+          # Obtener commits desde el último tag o desde el inicio
+          if git describe --tags --abbrev=0 >/dev/null 2>&1; then
+            LAST_TAG=$(git describe --tags --abbrev=0)
+            echo "## Cambios desde $LAST_TAG" >> CHANGELOG.md
+            git log --oneline --pretty=format:"- %s (%an - %ad)" --date=short $LAST_TAG..HEAD >> CHANGELOG.md
+          else
+            echo "## Todos los cambios" >> CHANGELOG.md
+            git log --oneline --pretty=format:"- %s (%an - %ad)" --date=short >> CHANGELOG.md
+          fi
+      
+      - name: Check for changes
+        id: verify-changed-files
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Commit and push changes
+        if: steps.verify-changed-files.outputs.changed == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add CHANGELOG.md
+          git commit -m "docs: auto-update CHANGELOG.md [skip ci]"
+          git push

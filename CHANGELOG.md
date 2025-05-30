@@ -1,5 +1,14 @@
 # Changelog
 
+## [v0.4.6] - 2025-05-30
+
+### Changes:
+- 🚀 new version (#15) ([9754d1d](https://github.com/marianolop22/NestJs-03_Pokedex/commit/9754d1d))
+- 🚀 check logs (#14) ([c8dc45c](https://github.com/marianolop22/NestJs-03_Pokedex/commit/c8dc45c))
+- 🔧 fix added url correct (#13) ([12a5671](https://github.com/marianolop22/NestJs-03_Pokedex/commit/12a5671))
+
+---
+
 ## [v0.4.5] - 2025-05-30
 
 ### Changes:

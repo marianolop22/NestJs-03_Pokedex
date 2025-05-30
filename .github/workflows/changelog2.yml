@@ -74,13 +74,10 @@ jobs:
                   else
                     # Fallback to commit message
                     DISPLAY_MESSAGE="$commit"
-                    echo "https://api.github.com/repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER"
                     echo "Fallback to commit message: $commit $token"
                   fi
                 else
                   # Regular commit, use commit message
-                  echo "VINO POR ACA"
-                  echo "https://api.github.com/repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER"
                   DISPLAY_MESSAGE="$commit"
                 fi
                 
@@ -164,5 +161,5 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add CHANGELOG.md
-          git commit -m "docs: auto-update CHANGELOG.md v$(node -p 'require(\"./package.json\").version') [skip ci]"
+          git commit -m "docs: auto-update CHANGELOG.md v$(node -p 'require("./package.json\").version') [skip ci]"
           git push

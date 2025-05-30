@@ -1,5 +1,13 @@
 # Changelog
 
+## [v0.4.5] - 2025-05-30
+
+### Changes:
+- 🔧 fix token (#12) ([a11886c](https://github.com/marianolop22/NestJs-03_Pokedex/commit/a11886c))
+- 🔧 fix bug new readme (#11) ([dea1ac3](https://github.com/marianolop22/NestJs-03_Pokedex/commit/dea1ac3))
+
+---
+
 ## [v0.4.4] - 2025-05-30
 
 ### Changes:

@@ -1,5 +1,14 @@
 # Changelog
 
+## [v0.4.8] - 2025-05-30
+
+### Changes:
+- 🚀 added changes to yml (#19) ([0e044d2](https://github.com/marianolop22/NestJs-03_Pokedex/commit/0e044d2))
+- 🔧 fix add doc perf feat changelog (#18) ([87eb816](https://github.com/marianolop22/NestJs-03_Pokedex/commit/87eb816))
+- 🔧 fix logs (#17) ([eb62e66](https://github.com/marianolop22/NestJs-03_Pokedex/commit/eb62e66))
+
+---
+
 ## [v0.4.7] - 2025-05-30
 
 ### Changes:

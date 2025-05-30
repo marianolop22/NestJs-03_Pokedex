@@ -21,6 +21,9 @@ jobs:
           node-version: '18'
       
       - name: Generate Enhanced Changelog
+        env:
+          GITHUB_TOKEN: ${{ secrets.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
           CURRENT_VERSION=$(node -p "require('./package.json').version")
           
@@ -54,24 +57,50 @@ jobs:
             if [ -n "$COMMITS" ]; then
               echo "### Changes:" >> temp_changelog.md
               echo "$COMMITS" | while IFS='|' read -r commit hash; do
+                # Check if this is a squash merge commit (contains PR number)
+                if [[ $commit =~ \(#([0-9]+)\)$ ]]; then
+                  PR_NUMBER="${BASH_REMATCH[1]}"
+                  echo "Found PR #$PR_NUMBER for commit $hash"
+                  
+                  # Get PR title using GitHub API
+                  PR_TITLE=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+                    "https://api.github.com/repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" | \
+                    python3 -c "import sys, json; print(json.load(sys.stdin)['title'])" 2>/dev/null || echo "")
+                  
+                  if [ -n "$PR_TITLE" ]; then
+                    # Use PR title instead of commit message
+                    DISPLAY_MESSAGE="$PR_TITLE"
+                    echo "Using PR title: $PR_TITLE"
+                  else
+                    # Fallback to commit message
+                    DISPLAY_MESSAGE="$commit"
+                    echo "Fallback to commit message: $commit"
+                  fi
+                else
+                  # Regular commit, use commit message
+                  DISPLAY_MESSAGE="$commit"
+                fi
+                
                 # Create commit link
                 COMMIT_LINK="[$hash]($REPO_URL/commit/$hash)"
                 
                 # Categorize commits
-                if echo "$commit" | grep -q "^feat"; then
-                  echo "- ⭐️ $commit ($COMMIT_LINK)" >> temp_changelog.md
-                elif echo "$commit" | grep -q "^fix"; then
-                  echo "- 🔧 $commit ($COMMIT_LINK)" >> temp_changelog.md
-                elif echo "$commit" | grep -q "^docs"; then
-                  echo "- 📝 $commit ($COMMIT_LINK)" >> temp_changelog.md
-                elif echo "$commit" | grep -q "^style"; then
-                  echo "- 🧬 $commit ($COMMIT_LINK)" >> temp_changelog.md
-                elif echo "$commit" | grep -q "^refactor"; then
-                  echo "- ♻️ $commit ($COMMIT_LINK)" >> temp_changelog.md
-                elif echo "$commit" | grep -q "^test"; then
-                  echo "- ✅ $commit ($COMMIT_LINK)" >> temp_changelog.md
+                if echo "$DISPLAY_MESSAGE" | grep -qi "^feat\|feature\|new.*feature"; then
+                  echo "- ⭐️ $DISPLAY_MESSAGE ($COMMIT_LINK)" >> temp_changelog.md
+                elif echo "$DISPLAY_MESSAGE" | grep -qi "^fix\|bug.*fix\|hotfix"; then
+                  echo "- 🔧 $DISPLAY_MESSAGE ($COMMIT_LINK)" >> temp_changelog.md
+                elif echo "$DISPLAY_MESSAGE" | grep -qi "^docs\|documentation"; then
+                  echo "- 📝 $DISPLAY_MESSAGE ($COMMIT_LINK)" >> temp_changelog.md
+                elif echo "$DISPLAY_MESSAGE" | grep -qi "^style\|styling"; then
+                  echo "- 🧬 $DISPLAY_MESSAGE ($COMMIT_LINK)" >> temp_changelog.md
+                elif echo "$DISPLAY_MESSAGE" | grep -qi "^refactor\|refactoring"; then
+                  echo "- ♻️ $DISPLAY_MESSAGE ($COMMIT_LINK)" >> temp_changelog.md
+                elif echo "$DISPLAY_MESSAGE" | grep -qi "^test\|testing"; then
+                  echo "- ✅ $DISPLAY_MESSAGE ($COMMIT_LINK)" >> temp_changelog.md
+                elif echo "$DISPLAY_MESSAGE" | grep -qi "^perf\|performance"; then
+                  echo "- ⚡ $DISPLAY_MESSAGE ($COMMIT_LINK)" >> temp_changelog.md
                 else
-                  echo "- 🚀 $commit ($COMMIT_LINK)" >> temp_changelog.md
+                  echo "- 🚀 $DISPLAY_MESSAGE ($COMMIT_LINK)" >> temp_changelog.md
                 fi
               done
             else

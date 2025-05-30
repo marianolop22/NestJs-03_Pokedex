@@ -1,5 +1,12 @@
 # Changelog
 
+## [v0.4.4] - 2025-05-30
+
+### Changes:
+- 🚀 bug New change log ([1d90fab](https://github.com/marianolop22/NestJs-03_Pokedex/commit/1d90fab))
+
+---
+
 ## [v0.4.3] - 2025-05-29
 
 ### Changes:

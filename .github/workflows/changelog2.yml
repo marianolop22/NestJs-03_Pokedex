@@ -37,11 +37,8 @@ jobs:
             REPO_URL="${REPO_URL%.git}"
           fi
           
-          # Check if entry for this version already exists
-          if [ -f CHANGELOG.md ] && grep -q "## \[v$CURRENT_VERSION\]" CHANGELOG.md; then
-            echo "Version $CURRENT_VERSION already exists in changelog, skipping..."
-            exit 0
-          fi
+          # Always regenerate entry for current version to include latest commits
+          echo "Updating changelog for version $CURRENT_VERSION..."
           
           # Create temporary file for new entry
           echo "## [v$CURRENT_VERSION] - $(date '+%Y-%m-%d')" > temp_changelog.md
@@ -74,7 +71,7 @@ jobs:
                   else
                     # Fallback to commit message
                     DISPLAY_MESSAGE="$commit"
-                    echo "Fallback to commit message: $commit $token"
+                    echo "Fallback to commit message: $commit"
                   fi
                 else
                   # Regular commit, use commit message
@@ -118,22 +115,59 @@ jobs:
           echo "---" >> temp_changelog.md
           echo "" >> temp_changelog.md
           
-          # If CHANGELOG.md exists, preserve previous content
+          # Handle CHANGELOG.md file creation/update
           if [ -f CHANGELOG.md ]; then
-            # Check if it has header, if not, add it
-            if ! grep -q "# Changelog" CHANGELOG.md; then
-              echo "# Changelog" > final_changelog.md
-              echo "" >> final_changelog.md
-              echo "All versions and project changes." >> final_changelog.md
-              echo "" >> final_changelog.md
-              cat temp_changelog.md >> final_changelog.md
-              cat CHANGELOG.md >> final_changelog.md
+            # Check if this version already exists
+            if grep -q "## \[v$CURRENT_VERSION\]" CHANGELOG.md; then
+              echo "Replacing existing entry for version $CURRENT_VERSION"
+              
+              # Create temp file with everything except the current version entry
+              awk -v version="v$CURRENT_VERSION" '
+                BEGIN { skip = 0 }
+                /^## \[/ { 
+                  if ($0 ~ "\\[" version "\\]") {
+                    skip = 1
+                    next
+                  } else if (skip == 1) {
+                    skip = 0
+                  }
+                }
+                /^---$/ && skip == 1 { next }
+                skip == 0 { print }
+              ' CHANGELOG.md > temp_existing.md
+              
+              # Combine: header + new entry + rest of changelog
+              if grep -q "# Changelog" temp_existing.md; then
+                # Insert new entry after header
+                sed '/^# Changelog/,/^$/{ /^$/r temp_changelog.md
+                }' temp_existing.md > final_changelog.md
+              else
+                echo "# Changelog" > final_changelog.md
+                echo "" >> final_changelog.md
+                echo "All versions and project changes." >> final_changelog.md
+                echo "" >> final_changelog.md
+                cat temp_changelog.md >> final_changelog.md
+                cat temp_existing.md >> final_changelog.md
+              fi
+              
+              rm -f temp_existing.md
             else
-              # Insert new entry after header
-              sed '/^# Changelog/,/^$/{ /^$/r temp_changelog.md
-              }' CHANGELOG.md > final_changelog.md
+              echo "Adding new entry for version $CURRENT_VERSION"
+              # Version doesn't exist, add at the beginning
+              if grep -q "# Changelog" CHANGELOG.md; then
+                sed '/^# Changelog/,/^$/{ /^$/r temp_changelog.md
+                }' CHANGELOG.md > final_changelog.md
+              else
+                echo "# Changelog" > final_changelog.md
+                echo "" >> final_changelog.md
+                echo "All versions and project changes." >> final_changelog.md
+                echo "" >> final_changelog.md
+                cat temp_changelog.md >> final_changelog.md
+                cat CHANGELOG.md >> final_changelog.md
+              fi
             fi
           else
+            echo "Creating new CHANGELOG.md file"
             # Create new file with header
             echo "# Changelog" > final_changelog.md
             echo "" >> final_changelog.md

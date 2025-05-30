@@ -63,8 +63,8 @@ jobs:
                   echo "Found PR #$PR_NUMBER for commit $hash"
                   
                   # Get PR title using GitHub API
-                  PR_TITLE=$(curl -s -H "Authorization: token $token" \
-                    "https://api.github.com/repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" | \
+                  PR_TITLE=$(curl -s -H "Authorization: Bearer $token" \
+                    "https://api.github.com/repos/marianolop22/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" | \
                     python3 -c "import sys, json; print(json.load(sys.stdin)['title'])" 2>/dev/null || echo "")
                   
                   if [ -n "$PR_TITLE" ]; then
@@ -74,6 +74,7 @@ jobs:
                   else
                     # Fallback to commit message
                     DISPLAY_MESSAGE="$commit"
+                    echo "https://api.github.com/repos/marianolop22/$GITHUB_REPOSITORY/pulls/$PR_NUMBER"
                     echo "Fallback to commit message: $commit"
                   fi
                 else

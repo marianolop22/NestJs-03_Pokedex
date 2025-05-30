@@ -3,6 +3,8 @@
 ## [v0.4.7] - 2025-05-30
 
 ### Changes:
+- 🔧 fix add doc perf feat changelog (#18) ([87eb816](https://github.com/marianolop22/NestJs-03_Pokedex/commit/87eb816))
+- 🔧 fix logs (#17) ([eb62e66](https://github.com/marianolop22/NestJs-03_Pokedex/commit/eb62e66))
 - 🚀 otro fix (#16) ([58146bd](https://github.com/marianolop22/NestJs-03_Pokedex/commit/58146bd))
 
 ---

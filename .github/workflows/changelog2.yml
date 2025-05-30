@@ -79,6 +79,8 @@ jobs:
                   fi
                 else
                   # Regular commit, use commit message
+                  echo "VINO POR ACA"
+                  echo "https://api.github.com/repos/marianolop22/$GITHUB_REPOSITORY/pulls/$PR_NUMBER"
                   DISPLAY_MESSAGE="$commit"
                 fi
                 
